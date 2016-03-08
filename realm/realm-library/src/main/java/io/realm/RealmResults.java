@@ -28,6 +28,7 @@ import java.util.ListIterator;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Future;
 
+import io.realm.annotations.internal.OptionalAPI;
 import io.realm.exceptions.RealmException;
 import io.realm.internal.InvalidRow;
 import io.realm.internal.TableOrView;
@@ -937,7 +938,9 @@ public final class RealmResults<E extends RealmObject> extends AbstractList<E> {
      * corresponding Realm instance doesn't support RxJava.
      * @see <a href="https://realm.io/docs/java/latest/#rxjava">RxJava and Realm</a>
      */
+
     @SuppressWarnings("unchecked")
+    @OptionalAPI(dependencies = {"rx.Observable"})
     public Observable<RealmResults<E>> asObservable() {
         if (realm instanceof Realm) {
             return realm.configuration.getRxFactory().from((Realm) realm, this);

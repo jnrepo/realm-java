@@ -21,6 +21,7 @@
 #include <realm/group_shared.hpp>
 #include <realm/replication.hpp>
 #include <realm/commit_log.hpp>
+#include <functional>
 
 #include "util.hpp"
 #include "io_realm_internal_SharedGroup.h"
@@ -326,24 +327,24 @@ JNIEXPORT jlongArray JNICALL Java_io_realm_internal_SharedGroup_nativeGetVersion
 }
 
 JNIEXPORT jboolean JNICALL Java_io_realm_internal_SharedGroup_nativeWaitForChange
-  (JNIEnv *env, jobject, jlong native_ptr)
+    (JNIEnv *env, jobject, jlong native_ptr)
 {
     TR_ENTER_PTR(native_ptr)
     SharedGroup* sharedGroup = SG(native_ptr);
     try {
+        std::function<bool()> interruptCheck = [&env]()->bool {
+            jclass threadClass = env->FindClass("java/lang/Thread");
+            jmethodID currentThreadMethodId = env->GetStaticMethodID(threadClass, "currentThread", "()Ljava/lang/Thread;");
+            jobject currehtThread = env->CallStaticObjectMethod(threadClass, currentThreadMethodId);
+            jmethodID isInterruptedId = env->GetMethodID(threadClass, "isInterrupted", "()Z");
+            jboolean isInterrupted = env->CallBooleanMethod(currehtThread, isInterruptedId);
+            env->DeleteLocalRef(currehtThread);
+            env->DeleteLocalRef(threadClass);
+            return (isInterrupted != 0 ? true : false);
+        };
         sharedGroup->enable_wait_for_change();
-        return sharedGroup->wait_for_change();
+        return sharedGroup->wait_for_change(interruptCheck);
     }
     CATCH_STD()
     return false;
-}
-
-JNIEXPORT void JNICALL Java_io_realm_internal_SharedGroup_nativeStopWaitForChange
-  (JNIEnv *env, jobject, jlong native_ptr)
-{
-    TR_ENTER_PTR(native_ptr)
-    try {
-        SG(native_ptr)->wait_for_change_release();
-    }
-    CATCH_STD()
 }

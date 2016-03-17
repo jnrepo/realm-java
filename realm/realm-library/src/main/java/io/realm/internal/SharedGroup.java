@@ -297,10 +297,6 @@ public class SharedGroup implements Closeable {
         return nativeWaitForChange(nativePtr);
     }
 
-    public void stopWaitForChange() {
-        nativeStopWaitForChange(nativePtr);
-    }
-
     private native long createNativeWithImplicitTransactions(long nativeReplicationPtr,
                                                              int durability, byte[] key);
     private native long nativeCreateReplication(String databaseFile, byte[] key);
@@ -326,7 +322,6 @@ public class SharedGroup implements Closeable {
     private native void nativeRollbackAndContinueAsRead(long nativePtr);
     private native long[] nativeGetVersionID (long nativePtr);
     private native boolean nativeWaitForChange(long nativePtr);
-    private native void nativeStopWaitForChange(long nativePtr);
     private native void nativeAdvanceRead(long nativePtr);
     private native void nativeAdvanceReadToVersion(long nativePtr, long version, long index) throws BadVersionException;
     private native void nativePromoteToWrite(long nativePtr);

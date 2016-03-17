@@ -22,6 +22,7 @@ import android.os.Looper;
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.lang.InterruptedException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -283,11 +284,11 @@ abstract class BaseRealm implements Closeable {
     }
 
     /**
-     * Blocks the current thread until new changes to the Realm are available or {@link #stopWaitForChange}
+     * Blocks the current thread until new changes to the Realm are available or {@link Thread#interrupt}
      * is called from another thread.
      *
      * @return {@code true} If the Realm was updated to the latest version, {@code false} if it was
-     * cancelled by calling {@link #stopWaitForChange}.
+     * cancelled by calling {@link Thread#interrupt}.
      * @throws IllegalStateException if attempting to wait within a transaction or a Looper thread.
      */
     public boolean waitForChange() {
@@ -303,15 +304,6 @@ abstract class BaseRealm implements Closeable {
             sharedGroupManager.advanceRead();
         }
         return hasChanged;
-    }
-
-    /**
-     * Makes {@link #waitForChange()} return {@code false} immediately. This method is threadsafe
-     * and should be called from another thread than the one that called {@link #waitForChange}.
-     * Calling {@code #stopWaitForChange()} on a Realm that is not waiting for changes has no effect.
-     */
-    public void stopWaitForChange() {
-        sharedGroupManager.stopWaitForChange();
     }
 
     /**

@@ -3090,7 +3090,7 @@ public class RealmTests {
         assertEquals(0, realm.where(Cat.class).count());
         assertTrue(realm.isEmpty());
     }
-
+/*
     @Test
     public void waitForChange_emptyDataChange() throws InterruptedException {
         final CountDownLatch bgRealmOpened = new CountDownLatch(1);
@@ -3267,7 +3267,7 @@ public class RealmTests {
         assertTrue(bgRealmChangeResult.get());
         assertEquals(TEST_DATA_SIZE, bgReamCount.get());
     }
-
+*/
     @Test
     public void waitForChange_onLooperThread() throws InterruptedException {
         final CountDownLatch bgRealmClosed = new CountDownLatch(1);
@@ -3305,5 +3305,32 @@ public class RealmTests {
         } finally {
             realm.cancelTransaction();
         }
+    }
+
+    @Test
+    public void interruptWaitForChange() throws InterruptedException {
+        final CountDownLatch bgRealmOpened = new CountDownLatch(1);
+        final CountDownLatch bgRealmClosed = new CountDownLatch(1);
+        final AtomicBoolean bgRealmResult = new AtomicBoolean(true);
+        final AtomicReference<Realm> bgRealm = new AtomicReference<Realm>();
+
+        // wait in background
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                Realm realm = Realm.getInstance(realmConfig);
+                bgRealm.set(realm);
+                bgRealmOpened.countDown();
+                bgRealmResult.set(realm.waitForChange());
+                realm.close();
+                bgRealmClosed.countDown();
+            }
+        });
+        thread.start();
+
+        TestHelper.awaitOrFail(bgRealmOpened);
+        thread.interrupt();
+        TestHelper.awaitOrFail(bgRealmClosed);
+        assertFalse(bgRealmResult.get());
     }
 }

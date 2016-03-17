@@ -184,14 +184,6 @@ JNIEXPORT jlongArray JNICALL Java_io_realm_internal_SharedGroup_nativeGetVersion
 JNIEXPORT jboolean JNICALL Java_io_realm_internal_SharedGroup_nativeWaitForChange
   (JNIEnv *, jobject, jlong);
 
-/*
- * Class:     io_realm_internal_SharedGroup
- * Method:    releaseWaitForChange
- * Signature: (J)V
- */
-JNIEXPORT void JNICALL Java_io_realm_internal_SharedGroup_nativeStopWaitForChange
-  (JNIEnv *, jobject, jlong);
-
 #ifdef __cplusplus
 }
 #endif
